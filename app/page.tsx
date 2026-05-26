@@ -176,8 +176,6 @@ function HomeContent() {
     service: '',
     budget: '$5k - $10k',
     timeline: '1-3 Months',
-    goals: '',
-    challenges: '',
     preferred_date: '',
     preferred_time: 'Morning',
   })
@@ -318,10 +316,6 @@ function HomeContent() {
 
     if (!formData.service.trim()) {
       newErrors.service = 'Please select at least one core service.'
-    }
-
-    if (!formData.goals.trim()) {
-      newErrors.goals = 'Main Business Goals are required.'
     }
 
     setErrors(newErrors)
@@ -699,30 +693,7 @@ function HomeContent() {
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label htmlFor="goals" className="block font-bold mb-2 text-sm text-[#0f0f11]">Main Business Goals *</label>
-                    <textarea 
-                      id="goals" 
-                      name="goals" 
-                      value={formData.goals} 
-                      onChange={handleInputChange} 
-                      className={`w-full min-h-[110px] resize-y border rounded-xl py-3.5 px-4 font-inherit outline-none bg-white text-[#0f0f11] transition-all duration-200 text-[15px] focus:border-[#e31313] focus:shadow-[0_0_0_4px_rgba(227,19,19,0.15)] ${errors.goals ? 'border-[#e31313]' : 'border-gray-300'}`}
-                      placeholder="What are you hoping to achieve with this project? (e.g. increase leads by 50%, improve checkout conversion)"
-                    ></textarea>
-                    {errors.goals && <p className="text-[#e31313] text-xs font-bold mt-1.5 flex items-center gap-1 opacity-100 transition-opacity duration-200">{errors.goals}</p>}
-                  </div>
 
-                  <div className="sm:col-span-2">
-                    <label htmlFor="challenges" className="block font-bold mb-2 text-sm text-[#0f0f11]">Technical / Design Challenges</label>
-                    <textarea 
-                      id="challenges" 
-                      name="challenges" 
-                      value={formData.challenges} 
-                      onChange={handleInputChange} 
-                      className="w-full min-h-[110px] resize-y border border-gray-300 rounded-xl py-3.5 px-4 font-inherit outline-none bg-white text-[#0f0f11] transition-all duration-200 text-[15px] focus:border-[#e31313] focus:shadow-[0_0_0_4px_rgba(227,19,19,0.15)]"
-                      placeholder="Are there specific roadblocks you are facing? (e.g. slow loading speeds, high mobile bounce rates)"
-                    ></textarea>
-                  </div>
 
                   <div>
                     <label htmlFor="preferred_date" className="block font-bold mb-2 text-sm text-[#0f0f11]">Preferred Date</label>
