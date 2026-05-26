@@ -1,10 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
-export default function ThankYouPage() {
+function ThankYouContent() {
+  const searchParams = useSearchParams()
+  const reportId = searchParams.get('report_id')
+  const leadId = searchParams.get('lead_id')
+
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
@@ -34,12 +39,17 @@ export default function ThankYouPage() {
     }
   }, []);
 
+  const query = new URLSearchParams()
+  if (reportId) query.append('report_id', reportId)
+  if (leadId) query.append('lead_id', leadId)
+  const homeHref = query.toString() ? `/?${query.toString()}` : '/'
+
   return (
     <div className="flex flex-col min-h-screen font-sans text-[#0f0f11] bg-gray-50 leading-relaxed antialiased">
       {/* Header */}
       <header className="py-2.5 border-b border-gray-200 bg-white/85 backdrop-blur-md sticky top-0 z-[100]">
         <div className="w-[92%] max-w-[1180px] mx-auto flex items-center justify-between gap-5">
-          <Link href="/" className="text-2xl font-black tracking-tighter text-[#0f0f11] flex items-center">
+          <Link href={homeHref} className="text-2xl font-black tracking-tighter text-[#0f0f11] flex items-center">
             <Image 
               src="/megamindlogoBlack.webp" 
               alt="Megamind Logo" 
@@ -58,7 +68,7 @@ export default function ThankYouPage() {
           <div className="bg-white border border-gray-200 rounded-[28px] p-6 sm:p-10 lg:py-[60px] lg:px-[50px] text-center shadow-lg">
             <h1 className="text-[clamp(32px,4vw,48px)] font-black text-[#0f0f11] mb-4">Thank You</h1>
             <p className="text-gray-500 text-lg mb-8">Your submission was successful. We will be in touch with you shortly.</p>
-            <Link href="/" className="inline-block border-none bg-gradient-to-br from-[#e31313] to-[#ff4b4b] text-white py-4 px-8 rounded-xl font-extrabold shadow-[0_10px_25px_rgba(227,19,19,0.25)] hover:-translate-y-[3px] hover:shadow-[0_15px_35px_rgba(227,19,19,0.4)] transition-all duration-300">
+            <Link href={homeHref} className="inline-block border-none bg-gradient-to-br from-[#e31313] to-[#ff4b4b] text-white py-4 px-8 rounded-xl font-extrabold shadow-[0_10px_25px_rgba(227,19,19,0.25)] hover:-translate-y-[3px] hover:shadow-[0_15px_35px_rgba(227,19,19,0.4)] transition-all duration-300">
               Return to Home
             </Link>
           </div>
@@ -72,5 +82,17 @@ export default function ThankYouPage() {
         </div>
       </footer>
     </div>
+  )
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-white font-sans text-gray-500">
+        <div>Loading thank you details...</div>
+      </div>
+    }>
+      <ThankYouContent />
+    </Suspense>
   )
 }

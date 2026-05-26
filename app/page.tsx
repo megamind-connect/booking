@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 const SERVICE_OPTIONS = [
@@ -9,20 +9,6 @@ const SERVICE_OPTIONS = [
   'Branding & Design',
   'Custom App Development',
   'SEO & Digital Marketing'
-]
-
-const BUDGET_OPTIONS = [
-  'Under $5k',
-  '$5k - $10k',
-  '$10k - $25k',
-  '$25k+'
-]
-
-const TIMELINE_OPTIONS = [
-  'Immediate',
-  '1-3 Months',
-  '3-6 Months',
-  'Flexible'
 ]
 
 const TIME_OPTIONS = [
@@ -160,8 +146,182 @@ function SingleSelectDropdown({
   )
 }
 
+const formatDate = (date: Date) => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const formatDisplayDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const dateObj = new Date(year, month - 1, day)
+  return dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function DatePickerDropdown({
+  value,
+  onChange,
+  hasError
+}: {
+  value: string
+  onChange: (val: string) => void
+  hasError?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  const [viewDate, setViewDate] = useState(() => {
+    if (value) {
+      const [year, month] = value.split('-').map(Number)
+      return new Date(year, month - 1, 1)
+    }
+    return new Date()
+  })
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handlePrevMonth = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
+  }
+
+  const handleNextMonth = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
+  }
+
+  const year = viewDate.getFullYear()
+  const month = viewDate.getMonth()
+  
+  const firstDayIndex = new Date(year, month, 1).getDay()
+  const adjustedFirstDayIndex = (firstDayIndex + 6) % 7
+
+  const totalDays = new Date(year, month + 1, 0).getDate()
+  
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const handleDateSelect = (dayNum: number) => {
+    const selectedDate = new Date(year, month, dayNum)
+    const formatted = formatDate(selectedDate)
+    onChange(formatted)
+    setIsOpen(false)
+  }
+
+  const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1)
+  const paddingArray = Array.from({ length: adjustedFirstDayIndex })
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ]
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <div 
+        className={`flex items-center justify-between w-full border rounded-xl py-3.5 px-4 bg-white cursor-pointer transition-all duration-200 text-[15px] hover:border-gray-400 ${hasError ? 'border-[#e31313] shadow-[0_0_0_4px_rgba(227,19,19,0.15)]' : 'border-gray-300'}`} 
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className={!value ? 'text-gray-500' : 'text-[#0f0f11]'} style={{ flex: 1 }}>
+          {value ? formatDisplayDate(value) : 'Select preferred date...'}
+        </span>
+        <svg className="text-gray-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-[calc(100%+8px)] left-0 w-full min-w-[280px] bg-white border border-gray-200 rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] p-4 z-50">
+          <div className="flex items-center justify-between mb-4">
+            <button 
+              type="button"
+              onClick={handlePrevMonth}
+              className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span className="font-extrabold text-sm text-[#0f0f11]">
+              {monthNames[month]} {year}
+            </span>
+            <button 
+              type="button"
+              onClick={handleNextMonth}
+              className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 text-center mb-2">
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, index) => (
+              <span key={index} className="text-[11px] font-bold text-gray-400 uppercase">
+                {d}
+              </span>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {paddingArray.map((_, i) => (
+              <div key={`pad-${i}`} />
+            ))}
+            {daysArray.map(dayNum => {
+              const dateForDay = new Date(year, month, dayNum)
+              const isPast = dateForDay < today
+              const isWeekend = dateForDay.getDay() === 0 || dateForDay.getDay() === 6
+              const isDisabled = isPast || isWeekend
+              const isSelected = value === formatDate(dateForDay)
+
+              return (
+                <button
+                  key={dayNum}
+                  type="button"
+                  disabled={isDisabled}
+                  onClick={() => handleDateSelect(dayNum)}
+                  className={`
+                    h-8 w-8 mx-auto rounded-lg flex items-center justify-center text-xs font-semibold transition-all duration-150 select-none
+                    ${isSelected 
+                      ? 'bg-[#e31313] text-white shadow-md shadow-[#e31313]/25' 
+                      : isDisabled 
+                        ? 'text-gray-300 cursor-not-allowed bg-transparent' 
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-[#0f0f11] cursor-pointer'
+                    }
+                  `}
+                >
+                  {dayNum}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-3 text-[10px] text-center text-gray-400 font-medium">
+            * Consultations are scheduled Monday to Friday only.
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function HomeContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const reportId = searchParams.get('report_id')
   const leadId = searchParams.get('lead_id')
 
@@ -174,8 +334,6 @@ function HomeContent() {
     website: '',
     industry: '',
     service: '',
-    budget: '$5k - $10k',
-    timeline: '1-3 Months',
     preferred_date: '',
     preferred_time: 'Morning',
   })
@@ -199,19 +357,9 @@ function HomeContent() {
   const [animateWidths, setAnimateWidths] = useState(false)
   const [hasReport, setHasReport] = useState(false)
 
-  // Client-side hydration and localStorage check
+  // Client-side hydration
   useEffect(() => {
     setIsHydrated(true)
-    const savedSuccess = localStorage.getItem('megamind_consultation_success')
-    const savedDetails = localStorage.getItem('megamind_booking_details')
-    if (savedSuccess === 'true' && savedDetails) {
-      try {
-        setBookingDetails(JSON.parse(savedDetails))
-        setSuccess(true)
-      } catch (err) {
-        console.error('Failed to parse saved booking details:', err)
-      }
-    }
   }, [])
 
   useEffect(() => {
@@ -263,8 +411,6 @@ function HomeContent() {
             }
             setBookingDetails(details)
             setSuccess(true)
-            localStorage.setItem('megamind_consultation_success', 'true')
-            localStorage.setItem('megamind_booking_details', JSON.stringify(details))
           }
         }
       } catch (err) {
@@ -350,22 +496,12 @@ function HomeContent() {
       const data = await res.json()
 
       if (res.ok && data.success) {
-        const details = {
-          name: formData.name,
-          email: formData.email,
-          service: formData.service,
-          date: formData.preferred_date,
-          time: formData.preferred_time,
-        }
-        setBookingDetails(details)
-        setSuccess(true)
-        
-        // Save to localStorage so it is persistent on refresh
-        localStorage.setItem('megamind_consultation_success', 'true')
-        localStorage.setItem('megamind_booking_details', JSON.stringify(details))
-
-        // Scroll to success card
-        document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' })
+        // Redirect to thank you page preserving query params
+        const query = new URLSearchParams()
+        if (reportId) query.append('report_id', reportId)
+        if (leadId) query.append('lead_id', leadId)
+        const queryString = query.toString()
+        router.push(queryString ? `/thank-you?${queryString}` : '/thank-you')
       } else {
         setError(data.error || 'Failed to submit booking. Please try again.')
       }
@@ -673,37 +809,23 @@ function HomeContent() {
                     {errors.service && <p className="text-[#e31313] text-xs font-bold mt-1.5 flex items-center gap-1 opacity-100 transition-opacity duration-200">{errors.service}</p>}
                   </div>
 
-                  <div>
-                    <label htmlFor="budget" className="block font-bold mb-2 text-sm text-[#0f0f11]">Target Budget</label>
-                    <SingleSelectDropdown
-                      value={formData.budget}
-                      options={BUDGET_OPTIONS}
-                      onChange={(val) => setFormData(prev => ({ ...prev, budget: val }))}
-                      placeholder="Select budget..."
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="timeline" className="block font-bold mb-2 text-sm text-[#0f0f11]">Timeline</label>
-                    <SingleSelectDropdown
-                      value={formData.timeline}
-                      options={TIMELINE_OPTIONS}
-                      onChange={(val) => setFormData(prev => ({ ...prev, timeline: val }))}
-                      placeholder="Select timeline..."
-                    />
-                  </div>
-
 
 
                   <div>
                     <label htmlFor="preferred_date" className="block font-bold mb-2 text-sm text-[#0f0f11]">Preferred Date</label>
-                    <input 
-                      type="date" 
-                      id="preferred_date" 
-                      name="preferred_date" 
-                      value={formData.preferred_date} 
-                      onChange={handleInputChange} 
-                      className="w-full border border-gray-300 rounded-xl py-3.5 px-4 font-inherit outline-none bg-white text-[#0f0f11] transition-all duration-200 text-[15px] focus:border-[#e31313] focus:shadow-[0_0_0_4px_rgba(227,19,19,0.15)]"
+                    <DatePickerDropdown
+                      value={formData.preferred_date}
+                      onChange={(val) => {
+                        setFormData(prev => ({ ...prev, preferred_date: val }))
+                        if (errors.preferred_date) {
+                          setErrors(prev => {
+                            const copy = { ...prev }
+                            delete copy.preferred_date
+                            return copy
+                          })
+                        }
+                      }}
+                      hasError={!!errors.preferred_date}
                     />
                   </div>
 
