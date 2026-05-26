@@ -15,14 +15,12 @@ export async function POST(req: NextRequest) {
       service,
       budget,
       timeline,
-      goals,
-      challenges,
       preferred_date,
       preferred_time
     } = body
 
-    if (!email || !name || !website || !service || !goals) {
-      return NextResponse.json({ error: 'Name, Email, Website URL, Service, and Main Business Goals are required.' }, { status: 400 })
+    if (!email || !name || !website || !service) {
+      return NextResponse.json({ error: 'Name, Email, Website URL, and Service are required.' }, { status: 400 })
     }
 
     let finalLeadId = lead_id
@@ -104,8 +102,6 @@ export async function POST(req: NextRequest) {
         service: service,
         budget: budget || null,
         timeline: timeline || null,
-        goals: goals.trim(),
-        challenges: challenges ? challenges.trim() : null,
         preferred_date: preferred_date || null,
         preferred_time: preferred_time || null
       })
