@@ -1,0 +1,8 @@
+# Megamind Studios - Website & Brand Audit Consultation
+
+This is the official landing page for booking a 1-on-1 website and brand audit consultation with Megamind Studios. Users can submit their business details, website link, and growth requirements to request a professional audit and consultation.
+
+## Core Pages
+
+- [Homepage](https://megamind.studio/): The main landing page containing the audit value proposition, form submission modal/section, and contact/booking workflows.
+- [Thank You Page](https://megamind.studio/thank-you): The confirmation page displayed after a user successfully submits their lead details for the audit.
